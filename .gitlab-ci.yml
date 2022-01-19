@@ -1,0 +1,22 @@
+# This file is a template, and might need editing before it works on your project.
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/rust/tags/
+image: "rust:latest"
+
+# Optional: Pick zero or more services to be used on all builds.
+# Only needed when using a docker container to run your tests in.
+# Check out: http://docs.gitlab.com/ee/ci/docker/using_docker_images.html#what-is-a-service
+# services:
+#   - mysql:latest
+#   - redis:latest
+#   - postgres:latest
+
+# Use cargo to test the project
+test:cargo:
+  before_script:
+    - rustup component add clippy
+  script:
+    - rustc --version && cargo --version  # Print version info for debugging
+    - cargo test --color always --workspace -- --nocapture
+    - cargo clippy
+
