@@ -11,6 +11,11 @@ use serde::Deserialize;
 mod internal;
 use internal::{ArrayDeserializer, DataBuffer, Deserializer};
 
+/// This is the entry point to the deserializer and
+/// it converts from a [`Message`] to any type that implements
+/// Serde's `Deserialize` trait.
+///
+/// [`Message`]: crate::message::Message
 pub fn from_message<'a, T: Deserialize<'a>>(mesg: &'a Message) -> Result<T> {
     let mut buff = DataBuffer::from_message(mesg);
     let de = Deserializer::<LE>::from_message_and_buffer(&mut buff, mesg);

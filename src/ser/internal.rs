@@ -55,13 +55,13 @@ impl ReadySerializer {
         ReadyStructSerializer::new_kv_pair(self.mesg)
     }
 
-    pub(super) fn start_array(self, item_sig: Option<Vec<u8>>) -> ReadyArraySerializer {
+    pub(super) fn start_array(self, item_sig: Vec<u8>) -> ReadyArraySerializer {
         ReadyArraySerializer::new(self.mesg, item_sig)
     }
 
     pub(super) fn start_dict(self) -> ReadyDictSerializer {
         ReadyDictSerializer {
-            ser: self.start_array(Some(vec![b'{', b's', b'v', b'}'])),
+            ser: self.start_array(vec![b'{', b's', b'v', b'}']),
         }
     }
 
@@ -160,11 +160,11 @@ pub(super) struct ReadyArraySerializer {
     // contents has all deserialized data from inside the array
     // the signature is to be kept empty
     contents: PendingMessage,
-    item_sig: Option<Vec<u8>>,
+    item_sig: Vec<u8>,
 }
 
 impl ReadyArraySerializer {
-    fn new(mesg: PendingMessage, item_sig: Option<Vec<u8>>) -> Self {
+    fn new(mesg: PendingMessage, item_sig: Vec<u8>) -> Self {
         Self {
             prev: mesg,
             contents: PendingMessage::new(),
@@ -186,20 +186,13 @@ impl ReadyArraySerializer {
     pub(super) fn finish_array(self) -> DoneSerializer {
         let Self {
             prev: mut mesg,
-            mut contents,
-            item_sig,
+            contents,
+            mut item_sig,
         } = self;
 
         // Get signature correct
         mesg.signature.push(b'a');
-        if let Some(mut item_sig) = item_sig {
-            mesg.signature.append(&mut item_sig);
-        } else {
-            // Guess i's an empty struct?
-            contents.builder.align(8);
-            mesg.signature.push(b'(');
-            mesg.signature.push(b')');
-        }
+        mesg.signature.append(&mut item_sig);
 
         mesg.builder.align(4);
         let token = mesg.builder.start_length();
@@ -212,7 +205,7 @@ impl ReadyArraySerializer {
 
 pub(super) struct PendingArraySerializer {
     prev: PendingMessage,
-    item_sig: Option<Vec<u8>>,
+    item_sig: Vec<u8>,
 }
 
 impl PendingArraySerializer {
@@ -220,15 +213,14 @@ impl PendingArraySerializer {
         let mut children_mesg = item.extract();
         let mut sig = Vec::new();
         swap(&mut sig, &mut children_mesg.signature);
-        if let Some(item_sig) = self.item_sig {
-            if item_sig != sig {
-                return Err(Error::MismatchSignature(item_sig, sig));
-            }
+        let item_sig = self.item_sig;
+        if item_sig != sig {
+            return Err(Error::MismatchSignature(item_sig, sig));
         }
         Ok(ReadyArraySerializer {
             prev: self.prev,
             contents: children_mesg,
-            item_sig: Some(sig),
+            item_sig: item_sig,
         })
     }
 }
@@ -340,7 +332,7 @@ mod tests {
     fn serialize_variant_farray() -> Result<()> {
         let top_level_serializer = ReadySerializer::new();
         let (top_level_serializer, serializer) = top_level_serializer.start_variant();
-        let serializer = serializer.start_array(None);
+        let serializer = serializer.start_array("d".as_bytes().to_vec());
 
         let (serializer, sub_serializer) = serializer.start_item();
         let sub_serializer = sub_serializer.serialize_primitive(&1.0)?;
@@ -379,7 +371,7 @@ mod tests {
     #[test]
     fn serialize_intary() -> Result<()> {
         let serializer = ReadySerializer::new();
-        let serializer = serializer.start_array(None);
+        let serializer = serializer.start_array("i".as_bytes().to_vec());
 
         let (serializer, sub_serializer) = serializer.start_item();
         let sub_serializer = sub_serializer.serialize_primitive(&1)?;

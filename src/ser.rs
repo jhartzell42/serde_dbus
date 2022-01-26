@@ -12,6 +12,27 @@ pub mod serializer_policy;
 use internal::*;
 use serializer_policy::{DefaultSerializerPolicy, SerializerPolicy, StructSerializationStyle};
 
+/// This is the entry point to the serializer. The default
+/// serialization policy, [`DefaultSerializerPolicy`]
+/// serializes tuples and tuple structs in "struct" style,
+/// e.g. a tuple with two `i32`s and a `String` would serialize
+/// as `(iis)`. Structs with named fields are serialized in dictionary
+/// style, as `a{sv}` where the keys of the dictionary are the names
+/// of the fields, and the values are the values of those fields,
+/// wrapped in variants, which is DBus's mechanism for type erasure.
+///
+/// Instead, to always use struct-style serialization, as `zvariant`
+/// does, you can use [`StronglyTypedSerializerPolicy`].
+///
+/// To make these decisions on a struct-by-struct basis, you can
+/// create a custom implementation of the [`SerializerPolicy`] trait.
+///
+/// Currently, all arrays are serialized as `av`. This is a known
+/// shortcoming and will be addressed in future versions.
+///
+/// [`DefaultSerializerPolicy`]: serializer_policy::DefaultSerializerPolicy
+/// [`StronglyTypedSerializerPolicy`]: serializer_policy::StronglyTypedSerializerPolicy
+/// [`SerializerPolicy`]: serializer_policy::SerializerPolicy
 pub fn serialize_with_policy(
     value: impl Serialize,
     config: impl SerializerPolicy,
@@ -25,6 +46,10 @@ pub fn serialize_with_policy(
     done_serializer.complete()
 }
 
+/// This is a convenience function that simply calls [`serialize_with_policy`]
+/// with the default policy.
+///
+/// [`serialize_with_policy`]: serialize_with_policy
 pub fn serialize(value: impl Serialize) -> Result<Message> {
     serialize_with_policy(value, DefaultSerializerPolicy)
 }
@@ -167,7 +192,7 @@ impl<C: SerializerPolicy> ser::Serializer for Serializer<C> {
 
     fn serialize_seq(self, _: std::option::Option<usize>) -> Result<Self::SerializeSeq> {
         Ok(SerializeSeq {
-            internal_ser: Some(self.internal_ser.start_array(None)),
+            internal_ser: Some(self.internal_ser.start_array(vec![b'v'])),
             config: self.config,
         })
     }
@@ -210,7 +235,7 @@ impl<C: SerializerPolicy> ser::Serializer for Serializer<C> {
 
     fn serialize_map(self, _: std::option::Option<usize>) -> Result<Self::SerializeMap> {
         Ok(SerializeMap {
-            internal_ser: Some(self.internal_ser.start_array(None)),
+            internal_ser: Some(self.internal_ser.start_array(vec![b'{', b's', b'v', b'}'])),
             inner_ser: None,
             pending_ser: None,
             config: self.config,
