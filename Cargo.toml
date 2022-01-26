@@ -1,11 +1,12 @@
 [package]
 name = "serde_dbus"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Jimmy Hartzell <jah259@cornell.edu>"]
 edition = "2018"
 description = "Serde Implementation for DBus"
 license = "MIT"
 repository = "https://gitlab.com/racepointenergy/rust_libraries/serde_dbus"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
