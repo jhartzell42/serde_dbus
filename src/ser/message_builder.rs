@@ -67,7 +67,7 @@ impl MessageBuilder {
             .last_mut()
             .expect("always at least one alignment slice")
         {
-            return a_slice;
+            a_slice
         } else {
             panic!("top message component must always be an alignment slice");
         }

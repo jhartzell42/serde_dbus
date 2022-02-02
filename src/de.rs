@@ -334,9 +334,7 @@ impl<'de, 'a, B: ByteOrder> ArrayDeserializer<'a, 'de, B> {
     fn new(mut de: Deserializer<'a, 'de, B>) -> Result<Self> {
         de.expect_signature_byte(b'a')?;
         de.align_reader(4)?;
-        let len = B::read_u32(
-            &de.read(4)?
-        ) as usize;
+        let len = B::read_u32(de.read(4)?) as usize;
         de.array_deserializer(len)
     }
 }
