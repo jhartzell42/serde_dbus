@@ -5,10 +5,12 @@ use std::fmt::Display;
 use std::str::Utf8Error;
 
 use serde::{de, ser};
+#[cfg(feature = "zbus")]
+use zbus::Error as ZbusError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+#[derive(Debug, PartialEq, thiserror::Error)]
 pub enum Error {
     #[error("serde error serializing")]
     Serializing(String),
@@ -57,6 +59,10 @@ pub enum Error {
 
     #[error("Array element ended at {0} overrunning bound at {1}")]
     ArrayElementOverrun(usize, usize),
+
+    #[cfg(feature = "zbus")]
+    #[error("Error converting to or from ZBus message: {0}")]
+    ZbusError(#[from] ZbusError),
 }
 
 impl ser::Error for Error {

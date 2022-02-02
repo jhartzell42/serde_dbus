@@ -253,7 +253,7 @@ impl<C: SerializerPolicy> ser::Serializer for Serializer<C> {
         };
 
         Ok(SerializeStruct {
-            internal_ser: internal_ser,
+            internal_ser,
             config: self.config,
         })
     }

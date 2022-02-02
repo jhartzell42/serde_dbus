@@ -220,7 +220,7 @@ impl PendingArraySerializer {
         Ok(ReadyArraySerializer {
             prev: self.prev,
             contents: children_mesg,
-            item_sig: item_sig,
+            item_sig,
         })
     }
 }
@@ -256,7 +256,7 @@ impl PendingDictSerializer {
         name: &str,
         value: DoneSerializer,
     ) -> Result<ReadyDictSerializer> {
-        if &value.mesg.signature == &[b'(', b')'] {
+        if value.mesg.signature == [b'(', b')'] {
             Ok(self.cancel_item())
         } else {
             self.finish_item(name, value)
