@@ -27,7 +27,12 @@ pub struct Message {
 impl Message {
     #[cfg(feature = "zbus")]
     pub fn as_zbus_message(&self, builder: ZbusMessageBuilder) -> Result<ZbusMessage> {
-        Ok(builder.build_raw_body(&self.data, &self.signature, vec![])?)
+        // Safety: This is only an unsafe method because the DBus message
+        // may be invalid. We constructed it with our serializer, so we
+        // believe it to be a valid message.
+        unsafe {
+            Ok(builder.build_raw_body(&self.data, self.signature.as_slice(), vec![])?)
+        }
     }
 }
 
