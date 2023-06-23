@@ -1,11 +1,11 @@
 [package]
 name = "serde_dbus"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Jimmy Hartzell <jah259@cornell.edu>"]
 edition = "2018"
 description = "Serde Implementation for DBus"
 license = "MIT"
-repository = "https://github.com/jhartzell/serde_dbus/"
+repository = "https://github.com/jhartzell42/serde_dbus/"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
