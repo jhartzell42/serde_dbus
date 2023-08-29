@@ -24,9 +24,7 @@
 //! Messages are in the [`Message`] type, and currently
 //! that is the only format supported for serialization and
 //! deserialization directly. Conversion is available into
-//! [zbus] messages if the `zbus` feature is enabled,
-//! but this only works with the Savant (hopefully temporary)
-//! fork of [zbus](https://gitlab.com/racepointenergy/rust_libraries/zbus).
+//! [zbus] messages if the `zbus` feature is enabled.
 //!
 //! Deserialization is handled by the [`de`] module, but
 //! really boils down to the [`from_message`] function,
